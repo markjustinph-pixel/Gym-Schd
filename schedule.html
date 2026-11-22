@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <header id="top" class="site-header">
     <div class="navbar">
       <h1>Mark Justin Melgar</h1>
@@ -14,16 +15,37 @@
         <ul class="nav-links">
           <li><a href="index.html">About Me</a></li>
           <li><a href="schedule.html" class="active">Workout Schedule</a></li>
+          <li><a href="todo.html">Daily Tasks</a></li>
           <li><a href="contact.html">Contact Me</a></li>
         </ul>
       </nav>
     </div>
   </header>
   
-  <main class="container">
+  <main class="container" id="main-content">
     <section id="schedule" class="schedule-section">
       <h2>Workout Schedule</h2>
       <p class="section-subtitle">Weekly Gym Split</p>
+
+      <section class="weekly-progress" aria-labelledby="weekly-progress-title">
+        <div class="progress-heading">
+          <div>
+            <h3 id="weekly-progress-title">Weekly Progress</h3>
+            <p id="weekly-progress-text" aria-live="polite">0 of 5 workout days completed</p>
+          </div>
+          <strong id="weekly-progress-percent">0%</strong>
+        </div>
+        <div class="progress-track" role="progressbar"
+             aria-label="Weekly workout completion" aria-valuemin="0"
+             aria-valuemax="100" aria-valuenow="0" id="weekly-progress-bar">
+          <span id="weekly-progress-fill"></span>
+        </div>
+        <p class="progress-hint">A workout day counts as complete when all its exercises are checked.</p>
+      </section>
+
+
+      <div class="day-selector" id="day-selector" role="tablist" aria-label="Workout days"></div>
+
       <div class="schedule-grid">
         <article class="workout-card">
           <span class="day-badge">Monday</span>
@@ -117,7 +139,8 @@
           <span class="day-badge">Saturday</span>
           <h3>Legs &amp; Abs</h3>
           <p class="time">1:00 - 3:00 PM</p>
-          <li>
+          <ul class="exercise-list">
+<li>
               Stiff-Legged Deadlift - 3x8-10
               <span class="rest-note"> 3 minutes rest</span>
             </li>
@@ -137,13 +160,15 @@
               Single Arm Lateral Raises - 3x12
               <span class="rest-note">2 minutes rest</span>
             </li>
+          </ul>
         </article>
 
         <article class="workout-card">
           <span class="day-badge">Sunday</span>
           <h3>Full Body</h3>
           <p class="time">9:00 - 11:00 AM</p>
-          <li>
+          <ul class="exercise-list">
+<li>
               Pendley Rows - 3x8-12
               <span class="rest-note">3 minutes rest</span>
             </li>
@@ -179,13 +204,32 @@
               Incline Push Up - 3x12
               <span class="rest-note">2 minutes rest</span>
             </li>
+          </ul>
         </article>
       </div>
+
+      <section class="achievements" aria-labelledby="achievements-title">
+        <div class="progress-heading">
+          <div>
+            <h3 id="achievements-title">Achievements</h3>
+            <p id="streak-summary">Current streak: 0 weeks. Best streak: 0 weeks.</p>
+          </div>
+        </div>
+        <ul class="achievement-list" id="achievement-list"></ul>
+        <p class="progress-hint">A successful week means all five workout days are completed.</p>
+      </section>
+
+      <section class="history" aria-labelledby="history-title">
+        <h3 id="history-title">Workout History</h3>
+        <p class="progress-hint">Every week is saved in this browser. Past weeks are never erased.</p>
+        <ul class="history-list" id="history-list"></ul>
+      </section>
     </section>
   </main>
 
   <footer class="site-footer">
     <p>&copy; 2026 Mark Justin Melgar.</p>
   </footer>
+  <script src="script.js" defer></script>
 </body>
 </html>

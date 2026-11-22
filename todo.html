@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MJM Workout Portfolio | Daily Tasks</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header id="top" class="site-header">
+    <div class="navbar">
+      <h1>Mark Justin Melgar</h1>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">About Me</a></li>
+          <li><a href="schedule.html">Workout Schedule</a></li>
+          <li><a href="todo.html" class="active">Daily Tasks</a></li>
+          <li><a href="contact.html">Contact Me</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="main-content">
+    <section id="tasks" class="schedule-section todo-section">
+      <h2>Daily Tasks</h2>
+      <p class="section-subtitle">Everything around the workout: meals, gear, rest and errands</p>
+
+      <figure class="todo-quote" id="todo-quote">
+        <blockquote id="todo-quote-text">Loading today's quote...</blockquote>
+        <figcaption id="todo-quote-author"></figcaption>
+        <button type="button" class="todo-link" id="todo-new-quote">Get another quote</button>
+      </figure>
+
+      <form class="todo-form" id="todo-form" novalidate>
+        <label class="todo-hidden" for="todo-input">New task</label>
+        <input type="text" id="todo-input" maxlength="100"
+               placeholder="e.g. Prep post-workout meal" autocomplete="off"
+               aria-describedby="todo-message">
+        <button type="submit" class="btn-submit">Add task</button>
+      </form>
+      <p class="todo-message" id="todo-message" role="alert"></p>
+
+      <div class="todo-toolbar">
+        <div class="todo-filters" id="todo-filters" role="group" aria-label="Filter tasks">
+          <button type="button" class="todo-filter is-active" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="todo-filter" data-filter="active" aria-pressed="false">Active</button>
+          <button type="button" class="todo-filter" data-filter="completed" aria-pressed="false">Completed</button>
+        </div>
+        <p class="todo-count" id="todo-count" aria-live="polite">0 tasks</p>
+      </div>
+
+      <ul class="todo-list" id="todo-list"></ul>
+      <p class="todo-empty" id="todo-empty" hidden></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 Mark Justin Melgar.</p>
+  </footer>
+  <script src="script.js" defer></script>
+</body>
+</html>

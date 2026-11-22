@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <header id="top" class="site-header">
     <div class="navbar">
       <h1>Mark Justin Melgar</h1>
@@ -14,17 +15,18 @@
         <ul class="nav-links">
           <li><a href="index.html" class="active">About Me</a></li>
           <li><a href="schedule.html">Workout Schedule</a></li>
+          <li><a href="todo.html">Daily Tasks</a></li>
           <li><a href="contact.html">Contact Me</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="container">
+  <main class="container" id="main-content">
     <section id="about" class="about-section">
       <div class="about-text">
         <h2>About Me</h2>
-        <p>Welcome to my workout portfolio. The purpose of this website is just for my personal hobby and interest.</p>
+        <p>Welcome to my workout portfolio. This website is my personal hobby project, and it doubles as my daily workout planner.</p>
         <div class="hero-actions">
           <a href="schedule.html" class="btn-submit">View Workout Schedule</a>
         </div>
@@ -51,10 +53,33 @@
         </div>
       </div>
     </section>
+
+    <section id="features" class="features-section" aria-labelledby="features-title">
+      <h2 id="features-title">What This Site Does</h2>
+      <ul class="feature-list">
+        <li>
+          <h3>Weekly Schedule</h3>
+          <p>My five-day gym split, with every exercise, set, rep range and rest time.</p>
+        </li>
+        <li>
+          <h3>Daily Checklist</h3>
+          <p>Check off each exercise as I finish it, one workout day at a time.</p>
+        </li>
+        <li>
+          <h3>Progress Tracking</h3>
+          <p>Daily and weekly progress, saved in this browser so it is still there tomorrow.</p>
+        </li>
+        <li>
+          <h3>Achievements &amp; History</h3>
+          <p>Every week is kept, with badges for full weeks and consecutive-week streaks.</p>
+        </li>
+      </ul>
+    </section>
   </main>
 
   <footer class="site-footer">
     <p>&copy; 2026 Mark Justin Melgar.</p>
   </footer>
+  <script src="script.js" defer></script>
 </body>
 </html>
