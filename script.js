@@ -1256,3 +1256,100 @@
   loadQuote();
 
 })();
+
+(() => {
+  "use strict";
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const header = document.querySelector(".site-header");
+  const bar = document.createElement("div");
+  bar.className = "scroll-progress";
+  bar.setAttribute("aria-hidden", "true");
+  document.body.appendChild(bar);
+
+  let ticking = false;
+
+  function updateScroll() {
+    ticking = false;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const ratio = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+    bar.style.transform = `scaleX(${ratio})`;
+    if (header) header.classList.toggle("is-scrolled", window.scrollY > 12);
+  }
+
+  function requestScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateScroll);
+  }
+
+  window.addEventListener("scroll", requestScroll, { passive: true });
+  window.addEventListener("resize", requestScroll);
+  updateScroll();
+
+  const SPOT = ".workout-card, .feature-list li, .achievement-card, .history-item, .weekly-progress, .todo-quote";
+  let frame = 0;
+  let pending = null;
+
+  document.addEventListener("pointermove", event => {
+    if (event.pointerType === "touch") return;
+    const hit = event.target.closest(SPOT);
+    if (!hit) return;
+
+    pending = { hit, x: event.clientX, y: event.clientY };
+    if (frame) return;
+
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      const box = pending.hit.getBoundingClientRect();
+      pending.hit.style.setProperty("--mx", `${pending.x - box.left}px`);
+      pending.hit.style.setProperty("--my", `${pending.y - box.top}px`);
+    });
+  }, { passive: true });
+
+  function replay(node, name) {
+    node.classList.remove(name);
+    void node.offsetWidth;
+    node.classList.add(name);
+  }
+
+  function watch(id, name, skipEmpty) {
+    const node = document.getElementById(id);
+    if (!node) return;
+
+    let last = node.textContent;
+
+    new MutationObserver(() => {
+      const text = node.textContent;
+      if (text === last) return;
+      last = text;
+      if (skipEmpty && !text.trim()) return;
+      replay(node, name);
+    }).observe(node, { childList: true, characterData: true, subtree: true });
+  }
+
+  if (reduceMotion.matches) return;
+
+  watch("weekly-progress-percent", "is-bump");
+  watch("todo-count", "is-bump");
+  watch("todo-quote-text", "is-swap", true);
+  watch("todo-quote-author", "is-swap", true);
+  watch("form-status", "is-swap", true);
+  watch("todo-message", "is-swap", true);
+
+  if (!("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0 });
+
+  document.querySelectorAll(".features-section, .achievements, .history").forEach(node => {
+    if (node.getBoundingClientRect().top < window.innerHeight * 0.9) return;
+    node.classList.add("reveal");
+    observer.observe(node);
+  });
+})();
