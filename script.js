@@ -562,7 +562,7 @@
 (() => {
   "use strict";
 
-  const CONTACT_EMAIL = "your-email@example.com";
+  const CONTACT_EMAIL = "markjustin.ph@gmail.com";
 
   const form = document.getElementById("contact-form");
   const status = document.getElementById("form-status");
