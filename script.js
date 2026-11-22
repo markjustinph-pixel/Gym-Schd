@@ -594,7 +594,7 @@
   form.addEventListener("submit", event => {
     event.preventDefault();
 
-    if (CONTACT_EMAIL === "your-email@example.com") {
+    if (CONTACT_EMAIL === "markjustin.ph@gmail.com") {
       showStatus(
         "The site owner has not set an email address yet. Open contact.js and replace CONTACT_EMAIL.",
         true
@@ -1352,4 +1352,34 @@
     node.classList.add("reveal");
     observer.observe(node);
   });
+})();
+
+(() => {
+  "use strict";
+
+  function addHead(tag, attrs) {
+    const node = document.createElement(tag);
+    Object.keys(attrs).forEach(key => node.setAttribute(key, attrs[key]));
+    document.head.appendChild(node);
+  }
+
+  if (!document.querySelector('link[rel="manifest"]')) {
+    addHead("link", { rel: "manifest", href: "manifest.webmanifest" });
+    addHead("link", { rel: "apple-touch-icon", href: "apple-touch-icon.png" });
+    addHead("meta", { name: "theme-color", content: "#09090b" });
+    addHead("meta", { name: "mobile-web-app-capable", content: "yes" });
+    addHead("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
+    addHead("meta", { name: "apple-mobile-web-app-title", content: "MJM Workout" });
+    addHead("meta", { name: "apple-mobile-web-app-status-bar-style", content: "black" });
+  }
+
+  const secure = window.location.protocol === "https:" || window.location.hostname === "localhost";
+
+  if ("serviceWorker" in navigator && secure) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(error => {
+        console.warn("Offline mode unavailable:", error);
+      });
+    });
+  }
 })();
