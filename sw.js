@@ -1,4 +1,4 @@
-const CACHE = "mjm-workout-v1";
+const CACHE = "mjm-workout-v2";
 
 const FILES = [
   "./",
@@ -14,10 +14,10 @@ const FILES = [
   "icon-maskable-512.png",
   "apple-touch-icon.png",
   "360_F_296191090_PGQXIC2Y8CCsrJ7fgCsDd8OuVN8uJtNY.jpg",
-  "49c549e0-a247-48da-a0ec-b9f794891317.jpg",
-  "ba788eb1-ce8d-418a-b7b4-f605d56e88b2.jpg",
-  "b76db96d-fc23-4faa-a589-5cbd1723100b.jpg",
-  "acc5cc2d-dcac-41d4-9f4e-96ead7bda1a5.jpg"
+  "images/49c549e0-a247-48da-a0ec-b9f794891317.jpg",
+  "images/ba788eb1-ce8d-418a-b7b4-f605d56e88b2.jpg",
+  "images/b76db96d-fc23-4faa-a589-5cbd1723100b.jpg",
+  "images/acc5cc2d-dcac-41d4-9f4e-96ead7bda1a5.jpg"
 ];
 
 self.addEventListener("install", event => {
