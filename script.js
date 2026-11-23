@@ -594,7 +594,7 @@
   form.addEventListener("submit", event => {
     event.preventDefault();
 
-    if (CONTACT_EMAIL === "markjustin.ph@gmail.com") {
+    if (CONTACT_EMAIL === "your-email@example.com") {
       showStatus(
         "The site owner has not set an email address yet. Open contact.js and replace CONTACT_EMAIL.",
         true
