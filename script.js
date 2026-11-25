@@ -749,6 +749,7 @@
   function closeVideo() {
     if (!videoModal || videoModal.hidden) return;
     videoModal.hidden = true;
+    videoRequest += 1;
     videoFrame.replaceChildren(); 
     document.body.classList.remove("video-open");
     if (lastTrigger) lastTrigger.focus();
@@ -785,32 +786,91 @@
     });
   }
 
+  const VIDEO_CACHE_KEY = "mjm-video-cache-v1";
+  let videoRequest = 0;
+
+  function readVideoCache() {
+    try {
+      const data = JSON.parse(localStorage.getItem(VIDEO_CACHE_KEY));
+      return data && typeof data === "object" ? data : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function saveVideoCache(name, id) {
+    try {
+      const cache = readVideoCache();
+      cache[name] = id;
+      localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify(cache));
+    } catch (error) {
+      // Storage unavailable: the lookup just runs again next time.
+    }
+  }
+
+  function showVideoEmbed(name, id) {
+    videoFrame.replaceChildren();
+    const frame = make("iframe");
+    frame.src =
+      `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
+    frame.title = `${name} demo video`;
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
+    frame.allowFullscreen = true;
+    videoFrame.appendChild(frame);
+  }
+
+  function showVideoNote(name, message) {
+    videoFrame.replaceChildren();
+    const note = make("div", "video-modal__note");
+    note.appendChild(make("p", "", message));
+    const link = make("a", "", "Search YouTube for it");
+    link.href =
+      "https://www.youtube.com/results?search_query=" +
+      encodeURIComponent(`${name} proper form`);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    note.appendChild(link);
+    videoFrame.appendChild(note);
+  }
+
+  async function lookupVideo(name, request) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const response = await fetch(
+        "/api/exercise-video?name=" + encodeURIComponent(name),
+        { signal: controller.signal }
+      );
+      if (!response.ok) throw new Error("lookup failed");
+      const data = await response.json();
+      const id = getYouTubeId(data && data.id);
+      if (!id) throw new Error("no id");
+      saveVideoCache(name, id);
+      if (request === videoRequest) showVideoEmbed(name, id);
+    } catch (error) {
+      if (request === videoRequest) {
+        showVideoNote(name, "Couldn\u2019t load a demo video right now.");
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function openVideo(name, id, trigger) {
     ensureVideoModal();
     lastTrigger = trigger;
     videoTitle.textContent = name;
-    videoFrame.replaceChildren();
+    videoRequest += 1;
+    const request = videoRequest;
 
-    if (id) {
-      const frame = make("iframe");
-      frame.src =
-        `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-      frame.title = `${name} demo video`;
-      frame.allow = "autoplay; encrypted-media; picture-in-picture";
-      frame.allowFullscreen = true;
-      videoFrame.appendChild(frame);
+    // Order: your own link in VIDEOS, then a video found earlier, then a new lookup.
+    const known = id || getYouTubeId(readVideoCache()[name]);
+    if (known) {
+      showVideoEmbed(name, known);
     } else {
-
-      const note = make("div", "video-modal__note");
-      note.appendChild(make("p", "", "No video has been added for this exercise yet."));
-      const link = make("a", "", "Search YouTube for it");
-      link.href =
-        "https://www.youtube.com/results?search_query=" +
-        encodeURIComponent(`${name} proper form`);
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      note.appendChild(link);
-      videoFrame.appendChild(note);
+      videoFrame.replaceChildren();
+      videoFrame.appendChild(make("p", "video-modal__note", "Finding video\u2026"));
+      lookupVideo(name, request);
     }
 
     videoModal.hidden = false;
