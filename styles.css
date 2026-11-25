@@ -1908,3 +1908,341 @@ main.container > .schedule-section { animation: none; }
     transform: none;
   }
 }
+
+.plan-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.plan-note {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.plan-btn {
+  min-height: 44px;
+  padding: 0.6rem 1.4rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+.plan-btn:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+}
+.plan-btn:active { transform: scale(0.97); }
+.plan-btn--ghost {
+  color: var(--color-text);
+  background: transparent;
+  border-color: var(--color-border);
+}
+.plan-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #3f3f46;
+  box-shadow: none;
+}
+.plan-btn--danger { color: #fca5a5; }
+.plan-btn--small {
+  min-height: 40px;
+  padding: 0.45rem 1.1rem;
+}
+
+.plan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  animation: pageIn 0.25s ease both;
+}
+.plan-overlay[hidden] { display: none; }
+
+body.plan-open { overflow: hidden; }
+
+.plan-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: min(720px, 100%);
+  max-height: 92vh;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: var(--space-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  animation: rise 0.35s var(--ease-smooth) both;
+}
+
+.plan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.plan-head h2 { font-size: 1.35rem; }
+
+.plan-close {
+  width: 44px;
+  height: 44px;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+.plan-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--color-primary);
+}
+
+.plan-help {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.plan-days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.plan-day {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), background-color var(--transition);
+}
+.plan-day.is-on { border-color: rgba(239, 68, 68, 0.45); }
+.plan-day[open] { background: rgba(255, 255, 255, 0.045); }
+
+.plan-day summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-height: 52px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+.plan-day summary::-webkit-details-marker { display: none; }
+.plan-day-name { font-weight: 700; }
+.plan-day-meta {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.plan-day-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 0 1rem 1rem;
+}
+
+.plan-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.plan-toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-primary);
+}
+
+.plan-meta-fields,
+.plan-ex-fields {
+  display: grid;
+  gap: 0.6rem;
+}
+.plan-meta-fields { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.plan-ex-fields { grid-template-columns: 1fr 1.2fr 1.6fr; }
+
+.plan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.plan-field span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.plan-dialog input[type="text"],
+.plan-dialog input[type="number"],
+.plan-dialog select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.plan-dialog input[type="text"]:hover,
+.plan-dialog input[type="number"]:hover,
+.plan-dialog select:hover { border-color: #3f3f46; }
+.plan-dialog input[type="text"]:focus,
+.plan-dialog input[type="number"]:focus,
+.plan-dialog select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+.plan-dialog select:disabled { opacity: 0.55; }
+
+.plan-ex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.plan-ex {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+.plan-ex-name { grid-column: 1 / -1; }
+.plan-ex-btns {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.plan-icon {
+  width: 44px;
+  height: 44px;
+  font: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
+}
+.plan-icon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--color-primary);
+}
+.plan-icon:active:not(:disabled) { transform: scale(0.92); }
+.plan-icon:disabled { opacity: 0.35; cursor: default; }
+.plan-icon[data-action="remove"] { color: #fca5a5; }
+
+.plan-empty {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.plan-add {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 0.6rem;
+  padding-top: 0.4rem;
+}
+.plan-add-title {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.plan-add input[hidden] { display: none; }
+.plan-add input[data-picker="custom"],
+.plan-add .plan-btn { grid-column: 1 / -1; }
+
+.plan-error {
+  min-height: 1.4em;
+  color: #fca5a5;
+  font-size: 0.92rem;
+}
+
+.plan-actions {
+  position: sticky;
+  bottom: calc(var(--space-md) * -1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 calc(var(--space-md) * -1) calc(var(--space-md) * -1);
+  padding: 0.9rem var(--space-md);
+  background: var(--color-surface-elevated);
+  border-top: 1px solid var(--color-border);
+}
+.plan-actions .plan-btn { flex: 1 1 auto; }
+
+@media (max-width: 520px) {
+  .plan-dialog { padding: var(--space-sm); }
+  .plan-actions {
+    bottom: calc(var(--space-sm) * -1);
+    margin: 0 calc(var(--space-sm) * -1) calc(var(--space-sm) * -1);
+    padding: 0.8rem var(--space-sm);
+  }
+  .plan-ex-fields { grid-template-columns: 1fr 1fr; }
+  .plan-ex-fields .plan-field:last-child { grid-column: 1 / -1; }
+  .plan-ex { grid-template-columns: 1fr; }
+  .plan-ex-btns { justify-content: flex-end; }
+  .plan-add { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-overlay,
+  .plan-dialog { animation: none !important; }
+}
+
+.howto-musclemap {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto var(--space-xs);
+  padding: 0.5rem 0.75rem;
+  background: #18181b;
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) - 4px);
+}
+.howto-musclemap svg { display: block; width: 100%; height: auto; }
+.mm-base {
+  fill: #26262d;
+  stroke: #3a3a43;
+  stroke-width: 1;
+}
+.mm-on {
+  fill: var(--color-primary);
+  fill-opacity: 0.88;
+}
+.mm-label {
+  fill: var(--color-text-muted);
+  font-size: 11px;
+  font-family: system-ui, sans-serif;
+}
+.howto-figure.is-missing span { margin-top: var(--space-xs); }

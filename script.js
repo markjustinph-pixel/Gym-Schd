@@ -226,7 +226,7 @@
     {
       id: "first-full-week",
       title: "First Full Week",
-      description: "Complete all five workout days in one week.",
+      description: "Complete every workout day in one week.",
       type: "total",
       goal: 1
     },
@@ -818,6 +818,120 @@
     videoModal.querySelector(".video-modal__close").focus();
   }
 
+  const GROUP_MUSCLES = {
+    Abs: "Abs, core",
+    Arms: "Biceps, triceps, forearms",
+    Back: "Lats, upper back, biceps",
+    Chest: "Chest, shoulders, triceps",
+    Legs: "Quads, hamstrings, glutes, calves",
+    Shoulders: "Shoulders, upper back"
+  };
+
+  const GROUP_STEPS = {
+    Abs: [
+      "Set up on the floor, a bench or a bar with your core braced.|Move slowly through the full range, breathing out as you tighten your abs.|Lower under control without pulling on your neck or arching your back.",
+      "General form: slow, controlled reps beat fast ones. Stop if your lower back hurts."
+    ],
+    Arms: [
+      "Choose a weight you can control and keep your elbows close to your sides.|Curl or press through the full range of motion without swinging.|Lower slowly until your arms are fully extended.",
+      "General form: keep your upper arms still and avoid using momentum."
+    ],
+    Back: [
+      "Set up with your chest up and your back flat, gripping the handle or bar firmly.|Pull by driving your elbows back and squeezing your shoulder blades together.|Return slowly to a full stretch without rounding your back.",
+      "General form: lead with your elbows and keep your torso steady."
+    ],
+    Chest: [
+      "Set your shoulders back and down and plant your feet or hands firmly.|Lower the weight under control to your chest with your elbows slightly tucked.|Press back up to straight arms without bouncing.",
+      "General form: use a spotter or safety bars for heavy presses."
+    ],
+    Legs: [
+      "Stand or sit with your feet planted and your core braced.|Lower or move under control through a comfortable full range, keeping your knees in line with your toes.|Drive through your whole foot to return to the start.",
+      "General form: keep your chest up and your back flat, and start lighter while you learn the movement."
+    ],
+    Shoulders: [
+      "Stand or sit tall with your core braced and the weight in a controlled start position.|Raise or press the weight with a slight bend in your elbows, without shrugging.|Lower slowly back to the start.",
+      "General form: keep the weight light enough to move without swinging."
+    ]
+  };
+
+  function fallbackGuide(name) {
+    const group = (window.MJM_GROUPS || {})[name];
+    if (group && GROUP_STEPS[group]) {
+      return [GROUP_MUSCLES[group], GROUP_STEPS[group][0], GROUP_STEPS[group][1]];
+    }
+    return [
+      "Your custom exercise",
+      "Set up with a weight you can control.|Move through a full range of motion with good form.|Lower slowly and rest as planned.",
+      "Use the video button to search YouTube for form tips on this exercise."
+    ];
+  }
+
+  const BODY_PARTS = [
+    { view: 0, groups: ["Shoulders"], shape: "circle", a: [22, 42, 9] },
+    { view: 0, groups: ["Shoulders"], shape: "circle", a: [78, 42, 9] },
+    { view: 0, groups: ["Chest"], shape: "ellipse", a: [39, 54, 12, 9] },
+    { view: 0, groups: ["Chest"], shape: "ellipse", a: [61, 54, 12, 9] },
+    { view: 0, groups: ["Abs"], shape: "rect", a: [41, 68, 18, 32, 5] },
+    { view: 0, groups: ["Arms"], shape: "rect", a: [12, 50, 13, 28, 6] },
+    { view: 0, groups: ["Arms"], shape: "rect", a: [75, 50, 13, 28, 6] },
+    { view: 0, groups: ["Arms"], shape: "rect", a: [10, 80, 12, 40, 6] },
+    { view: 0, groups: ["Arms"], shape: "rect", a: [78, 80, 12, 40, 6] },
+    { view: 0, groups: ["Legs"], shape: "rect", a: [30, 104, 19, 46, 8] },
+    { view: 0, groups: ["Legs"], shape: "rect", a: [51, 104, 19, 46, 8] },
+    { view: 0, groups: ["Legs"], shape: "rect", a: [31, 152, 16, 36, 7] },
+    { view: 0, groups: ["Legs"], shape: "rect", a: [53, 152, 16, 36, 7] },
+    { view: 1, groups: ["Shoulders"], shape: "circle", a: [22, 42, 9] },
+    { view: 1, groups: ["Shoulders"], shape: "circle", a: [78, 42, 9] },
+    { view: 1, groups: ["Back"], shape: "path", a: "M32 40 Q50 35 68 40 L65 90 Q50 96 35 90 Z" },
+    { view: 1, groups: ["Arms"], shape: "rect", a: [12, 50, 13, 28, 6] },
+    { view: 1, groups: ["Arms"], shape: "rect", a: [75, 50, 13, 28, 6] },
+    { view: 1, groups: ["Arms"], shape: "rect", a: [10, 80, 12, 40, 6] },
+    { view: 1, groups: ["Arms"], shape: "rect", a: [78, 80, 12, 40, 6] },
+    { view: 1, groups: ["Legs"], shape: "rect", a: [30, 104, 19, 46, 8] },
+    { view: 1, groups: ["Legs"], shape: "rect", a: [51, 104, 19, 46, 8] },
+    { view: 1, groups: ["Legs"], shape: "rect", a: [31, 152, 16, 36, 7] },
+    { view: 1, groups: ["Legs"], shape: "rect", a: [53, 152, 16, 36, 7] }
+  ];
+
+  const BODY_OUTLINE = [
+    { shape: "circle", a: [50, 14, 11] },
+    { shape: "rect", a: [45, 24, 10, 10, 3] },
+    { shape: "path", a: "M26 36 Q50 30 74 36 L68 100 Q50 106 32 100 Z" },
+    { shape: "rect", a: [12, 36, 13, 42, 6] },
+    { shape: "rect", a: [75, 36, 13, 42, 6] },
+    { shape: "rect", a: [10, 80, 12, 40, 6] },
+    { shape: "rect", a: [78, 80, 12, 40, 6] },
+    { shape: "rect", a: [30, 104, 19, 46, 8] },
+    { shape: "rect", a: [51, 104, 19, 46, 8] },
+    { shape: "rect", a: [31, 152, 16, 36, 7] },
+    { shape: "rect", a: [53, 152, 16, 36, 7] }
+  ];
+
+  function shapeMarkup(part, className) {
+    const a = part.a;
+    if (part.shape === "circle") return `<circle class="${className}" cx="${a[0]}" cy="${a[1]}" r="${a[2]}"/>`;
+    if (part.shape === "ellipse") return `<ellipse class="${className}" cx="${a[0]}" cy="${a[1]}" rx="${a[2]}" ry="${a[3]}"/>`;
+    if (part.shape === "rect") return `<rect class="${className}" x="${a[0]}" y="${a[1]}" width="${a[2]}" height="${a[3]}" rx="${a[4]}"/>`;
+    return `<path class="${className}" d="${a}"/>`;
+  }
+
+  function buildMuscleMap(group) {
+    const wrapper = make("div", "howto-musclemap");
+    let markup = "";
+
+    [0, 1].forEach(view => {
+      markup += `<g transform="translate(${view ? 125 : 5} 4)">`;
+      BODY_OUTLINE.forEach(part => { markup += shapeMarkup(part, "mm-base"); });
+      BODY_PARTS.filter(part => part.view === view && part.groups.includes(group))
+        .forEach(part => { markup += shapeMarkup(part, "mm-on"); });
+      markup += `<text class="mm-label" x="50" y="202" text-anchor="middle">${view ? "Back" : "Front"}</text></g>`;
+    });
+
+    wrapper.innerHTML =
+      `<svg viewBox="0 0 230 210" role="img" aria-label="Body map highlighting the ${group.toLowerCase()} muscles">${markup}</svg>`;
+    return wrapper;
+  }
+
   const IMAGE_TYPES = ["avif", "gif", "webp", "jpg", "png"];
 
   function buildImage(name) {
@@ -835,8 +949,10 @@
       } else {
         img.remove();
         figure.classList.add("is-missing");
+        const group = (window.MJM_GROUPS || {})[name];
+        if (group) figure.appendChild(buildMuscleMap(group));
         figure.appendChild(
-          make("span", "", `Add a picture as images/${slug}.avif (or .gif, .webp, .jpg, .png)`)
+          make("span", "", `Add your own picture as images/${slug}.avif (or .gif, .webp, .jpg, .png)`)
         );
       }
     });
@@ -876,8 +992,7 @@
 
     const label = content.textContent.trim().replace(/\s+/g, " ").split(" - ")[0];
     const name = label.toLowerCase().replace("dumbell", "dumbbell");
-    const guide = GUIDES[name];
-    if (!guide) return;
+    const guide = GUIDES[name] || fallbackGuide(name);
 
     const panelId = `howto-${number}`;
     const button = make("button", "howto-btn", "How to");

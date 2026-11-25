@@ -1,4 +1,4 @@
-const CACHE = "mjm-workout-v2";
+const CACHE = "mjm-workout-v7";
 
 const FILES = [
   "./",
@@ -6,8 +6,12 @@ const FILES = [
   "schedule.html",
   "todo.html",
   "contact.html",
+  "macros.html",
+  "macros.css",
+  "macros.js",
   "styles.css",
   "script.js",
+  "planner.js",
   "manifest.webmanifest",
   "icon-192.png",
   "icon-512.png",
@@ -20,10 +24,59 @@ const FILES = [
   "images/acc5cc2d-dcac-41d4-9f4e-96ead7bda1a5.jpg"
 ];
 
+const EXERCISES = [
+  "incline-barbell-bench-press",
+  "flat-barbell-bench-press",
+  "close-grip-dumbbell-press",
+  "rope-push-down",
+  "close-grip-reverse-push-down-rope-push-down",
+  "lat-pull-down",
+  "chin-up",
+  "barbell-rows",
+  "zottman-curl",
+  "seated-hammer-curl",
+  "seated-dumbbell-curl",
+  "single-arm-lateral-raises",
+  "face-pull",
+  "dumbbell-overhead-press",
+  "reverse-barbell-curl",
+  "cross-body-hammer-curl",
+  "stiff-legged-deadlift",
+  "barbell-squat",
+  "crunch",
+  "leg-raises",
+  "pendley-rows",
+  "pull-up",
+  "deadlift",
+  "up-right-rows",
+  "decline-push-up",
+  "incline-push-up"
+];
+
+const TYPES = ["avif", "gif", "webp", "jpg", "png"];
+
+async function saveExercise(cache, slug) {
+  for (const type of TYPES) {
+    const path = `images/${slug}.${type}`;
+    try {
+      const response = await fetch(path, { cache: "reload" });
+      if (response.ok) {
+        await cache.put(path, response);
+        return;
+      }
+    } catch (error) {
+      return;
+    }
+  }
+}
+
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE)
-      .then(cache => Promise.all(FILES.map(file => cache.add(file).catch(() => null))))
+      .then(cache => Promise.all([
+        ...FILES.map(file => cache.add(file).catch(() => null)),
+        ...EXERCISES.map(slug => saveExercise(cache, slug))
+      ]))
       .then(() => self.skipWaiting())
   );
 });
@@ -56,18 +109,33 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  if (request.destination === "image") {
+    event.respondWith(
+      caches.match(request).then(hit => {
+        const refresh = fetch(request)
+          .then(response => {
+            if (response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE).then(cache => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => hit);
+        return hit || refresh;
+      })
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(request).then(hit => {
-      const refresh = fetch(request)
-        .then(response => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => hit);
-      return hit || refresh;
-    })
+    fetch(request, { cache: "no-cache" })
+      .then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
