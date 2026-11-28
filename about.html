@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MJM Workout Planner | About This App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header id="top" class="site-header">
+    <div class="navbar">
+      <h1>MJM Workout Planner</h1>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li class="desktop-main-nav-item"><a href="index.html">Dashboard</a></li>
+          <li class="desktop-main-nav-item"><a href="schedule.html">Workout Schedule</a></li>
+          <li class="desktop-main-nav-item"><a href="todo.html">Daily Tasks</a></li>
+          <li class="desktop-main-nav-item"><a href="macros.html">Macros</a></li>
+          <li><a href="admin.html" data-admin-only hidden>Admin panel</a></li>
+          <li><a href="index.html#auth-panel" data-auth-nav>Sign in</a></li>
+          <li><button type="button" class="nav-auth-button" data-sign-out hidden>Sign out</button></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="auth-global-status" id="global-auth-status" role="status" aria-live="polite"></p>
+  </header>
+  <nav class="mobile-tab-bar" aria-label="Primary navigation" data-authenticated-only hidden>
+    <a href="index.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9 21v-7h6v7"></path></svg></span><span>Dashboard</span></a>
+    <a href="schedule.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4m3-6v8m10-8v8m3-6v4M7 12h10"></path></svg></span><span>Workouts</span></a>
+    <a href="todo.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"></path></svg></span><span>Tasks</span></a>
+    <a href="macros.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"></path></svg></span><span>Macros</span></a>
+  </nav>
+
+  <main class="container" id="main-content">
+    <section class="about-app-section">
+      <p class="eyebrow">Built for consistent training</p>
+      <h2>About This App</h2>
+      <p>MJM Workout Planner brings your weekly workouts, daily tasks, and nutrition goals together in one place. Sign in to customize a personal workout plan, save your macro goal, and manage your profile.</p>
+      <div class="about-app-grid">
+        <article class="dashboard-card">
+          <h3>Plan your training</h3>
+          <p>Arrange exercises across the week and keep your workout schedule easy to follow.</p>
+        </article>
+        <article class="dashboard-card">
+          <h3>Track your routine</h3>
+          <p>Use daily tasks and workout progress tools to stay consistent. These are currently saved in this browser.</p>
+        </article>
+        <article class="dashboard-card">
+          <h3>Personalize nutrition</h3>
+          <p>Set an individual macro target and use the food log to keep an eye on your day.</p>
+        </article>
+      </div>
+      <p class="dashboard-note">Accounts and private settings use Supabase. The site can be hosted on Vercel. Account sign-in becomes available after the project credentials and database policy are configured.</p>
+      <a class="btn-submit" href="index.html">Back to dashboard</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 MJM Workout Planner</p>
+    <p><a href="about.html" aria-current="page">About This App</a> <a href="contact.html">Contact Me</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,8 +1,11 @@
-const CACHE = "mjm-workout-v8";
+const CACHE = "mjm-workout-v20";
 
 const FILES = [
   "./",
   "index.html",
+  "about.html",
+  "admin.html",
+  "admin.js",
   "schedule.html",
   "todo.html",
   "contact.html",
@@ -12,6 +15,10 @@ const FILES = [
   "styles.css",
   "script.js",
   "planner.js",
+  "auth.js",
+  "dashboard.js",
+  "splash.js",
+  "supabase-config.js",
   "manifest.webmanifest",
   "icon-192.png",
   "icon-512.png",

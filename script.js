@@ -1,5 +1,9 @@
-(() => {
+(async () => {
   "use strict";
+  await (window.MJM_PLAN_READY || Promise.resolve());
+  await (window.MJM_AUTH_READY || Promise.resolve());
+  const authState = window.MJM_AUTH ? window.MJM_AUTH.state : null;
+  const accountScoped = Boolean(authState && authState.user);
   const cards = Array.from(document.querySelectorAll(".workout-card"));
 
   const weeklyText = document.getElementById("weekly-progress-text");
@@ -10,6 +14,17 @@
   const streakSummary = document.getElementById("streak-summary");
   const achievementList = document.getElementById("achievement-list");
   const historyList = document.getElementById("history-list");
+
+  const scheduleEmpty = document.getElementById("schedule-empty");
+  if (scheduleEmpty) scheduleEmpty.hidden = cards.length > 0;
+  [
+    document.querySelector(".weekly-progress"),
+    document.getElementById("day-selector"),
+    document.querySelector(".achievements"),
+    document.querySelector(".history")
+  ].forEach(element => {
+    if (element) element.hidden = cards.length === 0;
+  });
 
   if (!cards.length) return;
 
@@ -53,14 +68,14 @@
 
   let storageWarningShown = false;
 
-  function showStorageWarning() {
+  function showStorageWarning(message) {
     if (storageWarningShown) return;
     storageWarningShown = true;
 
     const note = document.createElement("p");
     note.className = "storage-warning";
     note.setAttribute("role", "alert");
-    note.textContent =
+    note.textContent = message ||
       "Your browser is blocking saved progress. Checks will be lost when you leave this page.";
 
     const anchor = document.querySelector(".weekly-progress");
@@ -68,6 +83,11 @@
   }
 
   function readProgress() {
+    if (accountScoped) {
+      const saved = authState.appData?.workout_progress?.[currentWeekId];
+      return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    }
+
     try {
       return parseSaved(localStorage.getItem(storageKey));
     } catch (error) {
@@ -79,7 +99,22 @@
 
   let progress = readProgress();
 
-  function saveProgress() {
+  async function saveProgress() {
+    if (accountScoped) {
+      try {
+        await window.MJM_AUTH.saveAppData({
+          workout_progress: {
+            ...(authState.appData?.workout_progress || {}),
+            [currentWeekId]: progress
+          }
+        });
+      } catch (error) {
+        console.error("Workout progress could not be saved to the account:", error);
+        showStorageWarning(`Workout progress could not be saved to your account: ${error.message}`);
+      }
+      return;
+    }
+
     try {
       localStorage.setItem(storageKey, JSON.stringify(progress));
     } catch (error) {
@@ -89,6 +124,13 @@
   }
 
   function readAllWeeks() {
+    if (accountScoped) {
+      return {
+        ...(authState.appData?.workout_progress || {}),
+        [currentWeekId]: progress
+      };
+    }
+
     const weeks = {};
 
     try {
@@ -420,7 +462,7 @@
 
       checkbox.addEventListener("change", () => {
         progress[key] = checkbox.checked;
-        saveProgress();
+        void saveProgress();
         updateWeeklyProgress();
         refreshSummary();
       });
@@ -543,6 +585,20 @@
   }
 
   buildDaySelector();
+
+  window.addEventListener("mjm:account-data", event => {
+    if (!accountScoped) return;
+    const saved = event.detail?.workout_progress?.[currentWeekId];
+    progress = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    cards.forEach(card => {
+      const keys = cardKeys.get(card) || [];
+      card.querySelectorAll(".exercise-check").forEach((checkbox, index) => {
+        checkbox.checked = Boolean(progress[keys[index]]);
+      });
+    });
+    updateWeeklyProgress();
+    refreshSummary();
+  });
 
   function checkForNewWeek() {
     if (formatDateId(getWeekStart()) !== currentWeekId) {
@@ -1102,17 +1158,29 @@
   "use strict";
 
   const SELECTOR =
-    ".nav-links a, .btn-submit, .day-tab, .howto-btn, .howto-video, .site-footer a, .todo-filter, .todo-delete, .todo-link";
-  const SOLID = ".btn-submit, .howto-video";
+    ".nav-links a, .btn-submit, .day-tab, .howto-btn, .howto-video, " +
+    ".todo-filter, .todo-delete, .todo-link, .plan-btn, .plan-close, " +
+    ".video-modal__close, .macro-secondary";
+  const SOLID = ".btn-submit, .howto-video, .plan-btn:not(.plan-btn--ghost)";
+  const rippleTimers = new WeakMap();
 
   function ensureFill(button) {
     let fill = button.querySelector(":scope > .fx-fill");
     if (!fill) {
+      button.classList.add("fx-btn");
+      if (button.matches(SOLID)) button.classList.add("fx-solid");
+
+      button.childNodes.forEach(node => {
+        if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
+        const label = document.createElement("span");
+        label.className = "fx-label";
+        label.textContent = node.textContent;
+        node.replaceWith(label);
+      });
+
       fill = document.createElement("span");
       fill.className = "fx-fill";
       fill.setAttribute("aria-hidden", "true");
-      button.classList.add("fx-btn");
-      if (button.matches(SOLID)) button.classList.add("fx-solid");
       button.prepend(fill);
     }
     return fill;
@@ -1131,6 +1199,7 @@
     fill.style.width = fill.style.height = `${radius * 2}px`;
     fill.style.left = `${px}px`;
     fill.style.top = `${py}px`;
+    return fill;
   }
 
   function center(button) {
@@ -1148,8 +1217,28 @@
   document.addEventListener("pointerout", event => {
     const button = event.target.closest(SELECTOR);
     if (!button || button.contains(event.relatedTarget)) return;
+    if (event.pointerType === "touch") return;
     place(button, event.clientX, event.clientY);
     button.classList.remove("fx-on");
+  });
+
+  document.addEventListener("pointerdown", event => {
+    const button = event.target.closest(SELECTOR);
+    if (!button || event.button !== 0) return;
+
+    const fill = place(button, event.clientX, event.clientY);
+    button.classList.remove("fx-on");
+    void fill.offsetWidth;
+    button.classList.add("fx-on");
+
+    clearTimeout(rippleTimers.get(button));
+    const timer = window.setTimeout(() => {
+      if (event.pointerType === "touch" || !button.matches(":hover")) {
+        button.classList.remove("fx-on");
+      }
+      rippleTimers.delete(button);
+    }, 650);
+    rippleTimers.set(button, timer);
   });
 
   document.addEventListener("pointercancel", event => {
@@ -1171,11 +1260,14 @@
   });
 })();
 
-(() => {
+(async () => {
   "use strict";
 
   if (!document.getElementById("todo-list")) return;
 
+  await (window.MJM_AUTH_READY || Promise.resolve());
+  const authState = window.MJM_AUTH ? window.MJM_AUTH.state : null;
+  const accountScoped = Boolean(authState && authState.user);
   const STORAGE_KEY = "mjm-daily-tasks";
 
   const form = document.getElementById("todo-form");
@@ -1197,7 +1289,9 @@
 
   function loadTasks() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      const saved = accountScoped
+        ? authState.appData?.daily_tasks
+        : JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (!Array.isArray(saved)) return [];
 
       return saved
@@ -1212,7 +1306,17 @@
     }
   }
 
-  function saveTasks() {
+  async function saveTasks() {
+    if (accountScoped) {
+      try {
+        await window.MJM_AUTH.saveAppData({ daily_tasks: tasks });
+      } catch (error) {
+        console.error("Tasks could not be saved to the account:", error);
+        showMessage(`Tasks could not be saved to your account: ${error.message}`);
+      }
+      return;
+    }
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     } catch (error) {
@@ -1315,30 +1419,30 @@
     renderFilters();
   }
 
-  function addTask(text) {
+  async function addTask(text) {
     const task = { id: makeId(), text: text.trim().replace(/\s+/g, " "), done: false };
     tasks = [...tasks, task];
     justAddedId = task.id;
 
     if (filter === "completed") filter = "all";
 
-    saveTasks();
     render();
+    await saveTasks();
   }
 
-  function toggleTask(id) {
+  async function toggleTask(id) {
     tasks = tasks.map(task =>
       task.id === id ? { ...task, done: !task.done } : task
     );
-    saveTasks();
     render();
+    await saveTasks();
   }
 
   function deleteTask(id, row) {
-    const finish = () => {
+    const finish = async () => {
       tasks = tasks.filter(task => task.id !== id);
-      saveTasks();
       render();
+      await saveTasks();
     };
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1359,7 +1463,7 @@
     }
 
     showMessage("");
-    addTask(input.value);
+    void addTask(input.value);
     input.value = "";
     input.focus();
   });
@@ -1369,7 +1473,7 @@
   listEl.addEventListener("change", event => {
     const checkbox = event.target.closest('[data-action="toggle"]');
     if (!checkbox) return;
-    toggleTask(checkbox.closest(".todo-item").dataset.id);
+    void toggleTask(checkbox.closest(".todo-item").dataset.id);
   });
 
   listEl.addEventListener("click", event => {
@@ -1427,9 +1531,15 @@
 
   newQuoteBtn.addEventListener("click", loadQuote);
 
+  window.addEventListener("mjm:account-data", event => {
+    if (!accountScoped) return;
+    const saved = event.detail?.daily_tasks;
+    tasks = Array.isArray(saved) ? saved : [];
+    render();
+  });
+
   render();
   loadQuote();
-
 })();
 
 (() => {
@@ -1522,7 +1632,10 @@
     });
   }, { rootMargin: "0px 0px -8% 0px", threshold: 0 });
 
-  document.querySelectorAll(".features-section, .achievements, .history").forEach(node => {
+  document.querySelectorAll(
+    ".features-section, .feature-list li, .achievements, .history, " +
+    ".workout-card:not([hidden]), .macro-card"
+  ).forEach(node => {
     if (node.getBoundingClientRect().top < window.innerHeight * 0.9) return;
     node.classList.add("reveal");
     observer.observe(node);

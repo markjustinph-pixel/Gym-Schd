@@ -1,11 +1,10 @@
-(() => {
+window.MJM_PLAN_READY = (async () => {
   "use strict";
 
   const section = document.getElementById("schedule");
   const grid = document.querySelector(".schedule-grid");
   if (!section || !grid) return;
 
-  const STORAGE_KEY = "mjm-workout-plan-v1";
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const REST_OPTIONS = ["30 seconds", "45 seconds", "1 minute", "90 seconds", "2 minutes", "3 minutes", "4 minutes", "5 minutes"];
 
@@ -119,17 +118,6 @@
       DAYS.every(day => value[day] && Array.isArray(value[day].exercises));
   }
 
-  function loadPlan() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      return isPlan(parsed) ? parsed : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
   function renderGrid(plan) {
     grid.textContent = "";
 
@@ -156,9 +144,28 @@
     });
   }
 
+  await (window.MJM_AUTH_READY || Promise.resolve());
+  const authState = window.MJM_AUTH ? window.MJM_AUTH.state : null;
   const original = readCards();
-  const saved = loadPlan();
+  const saved = authState && authState.user && authState.settings &&
+    isPlan(authState.settings.workout_plan)
+    ? authState.settings.workout_plan
+    : null;
   if (saved) renderGrid(saved);
+
+  const emptyTitle = document.getElementById("schedule-empty-title");
+  const emptyDetail = document.getElementById("schedule-empty-detail");
+  if (authState && authState.user) {
+    if (emptyTitle) emptyTitle.textContent = "No workouts yet";
+    if (emptyDetail) {
+      emptyDetail.textContent = "Create a plan and add at least one exercise to a workout day.";
+    }
+  } else {
+    if (emptyTitle) emptyTitle.textContent = "No workouts yet";
+    if (emptyDetail) {
+      emptyDetail.textContent = "Sign in to create your personal workout schedule.";
+    }
+  }
 
   let draft = null;
   const openDays = new Set();
@@ -192,7 +199,7 @@
   const actions = make("div", "plan-actions");
   const saveButton = make("button", "plan-btn", "Save plan");
   const cancelButton = make("button", "plan-btn plan-btn--ghost", "Cancel");
-  const resetButton = make("button", "plan-btn plan-btn--ghost plan-btn--danger", "Reset to original");
+  const resetButton = make("button", "plan-btn plan-btn--ghost plan-btn--danger", "Remove plan");
   [saveButton, cancelButton, resetButton].forEach(button => { button.type = "button"; });
   actions.append(saveButton, cancelButton, resetButton);
 
@@ -372,7 +379,18 @@
   }
 
   function openEditor() {
-    draft = JSON.parse(JSON.stringify(loadPlan() || original));
+    if (!authState || !authState.user) {
+      window.location.href = "index.html#auth-panel";
+      return;
+    }
+    if (!authState.settings || authState.error) {
+      showError("Your account settings could not be loaded. Reload the page before editing your plan.", null);
+      return;
+    }
+
+    draft = JSON.parse(JSON.stringify(saved || original));
+    heading.textContent = saved ? "Edit workout plan" : "Create workout plan";
+    resetButton.hidden = !saved;
     openDays.clear();
     const firstOn = DAYS.find(day => draft[day].on);
     if (firstOn) openDays.add(firstOn);
@@ -423,7 +441,17 @@
     return null;
   }
 
-  function savePlan() {
+  async function savePlan() {
+    if (!authState || !authState.user) {
+      showError("Sign in before saving a workout plan.", null);
+      window.location.href = "index.html#auth-panel";
+      return;
+    }
+    if (!authState.settings || authState.error) {
+      showError("Your account settings could not be loaded. Reload the page before saving.", null);
+      return;
+    }
+
     const problem = validate();
     if (problem) {
       showError(problem.message, problem.day);
@@ -441,21 +469,31 @@
     });
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+      await window.MJM_AUTH.saveSettings({ workout_plan: draft });
     } catch (error) {
-      showError("Your browser could not save the plan. Check that storage is allowed for this site.", null);
+      showError(`Your account plan could not be saved: ${error.message}`, null);
       return;
     }
 
     window.location.reload();
   }
 
-  function resetPlan() {
-    if (!window.confirm("Go back to your original plan? Your edits will be removed. Your workout history stays.")) return;
+  async function resetPlan() {
+    if (!authState || !authState.user) {
+      showError("Sign in before changing your workout plan.", null);
+      window.location.href = "index.html#auth-panel";
+      return;
+    }
+    if (!authState.settings || authState.error) {
+      showError("Your account settings could not be loaded. Reload the page before changing your plan.", null);
+      return;
+    }
+    if (!window.confirm("Remove your workout plan? The schedule will be empty. Your workout history stays.")) return;
+
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      await window.MJM_AUTH.saveSettings({ workout_plan: null });
     } catch (error) {
-      showError("Your browser could not reset the plan.", null);
+      showError(`Your account plan could not be removed: ${error.message}`, null);
       return;
     }
     window.location.reload();
@@ -594,12 +632,18 @@
 
   const subtitle = section.querySelector(".section-subtitle");
   const bar = make("div", "plan-toolbar");
-  const editButton = make("button", "plan-btn", "Edit plan");
-  editButton.type = "button";
-  editButton.setAttribute("aria-haspopup", "dialog");
-  editButton.addEventListener("click", openEditor);
-  bar.appendChild(editButton);
-  if (saved) bar.appendChild(make("span", "plan-note", "Showing your custom plan"));
+  if (authState && authState.user) {
+    const editButton = make("button", "plan-btn", saved ? "Edit plan" : "Create workout plan");
+    editButton.type = "button";
+    editButton.setAttribute("aria-haspopup", "dialog");
+    editButton.addEventListener("click", openEditor);
+    bar.appendChild(editButton);
+    if (saved) bar.appendChild(make("span", "plan-note", "Showing your account plan"));
+  } else {
+    const signInLink = make("a", "plan-btn", "Sign in to add workouts");
+    signInLink.href = "index.html#auth-panel";
+    bar.appendChild(signInLink);
+  }
 
   if (subtitle) subtitle.insertAdjacentElement("afterend", bar);
   else section.insertBefore(bar, section.children[1] || null);

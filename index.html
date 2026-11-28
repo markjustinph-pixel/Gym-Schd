@@ -3,81 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MJM Workout Portfolio</title>
+  <title>MJM Workout Planner | Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header id="top" class="site-header">
+  <div class="loading-splash" id="loading-splash" role="status" aria-label="Loading MJM Workout Planner" aria-busy="true">
+    <div class="loading-splash__content">
+      <img class="loading-splash__icon" src="icon-192.png" alt="MJM Workout Planner" width="144" height="144">
+    </div>
+  </div>
+
+  <a class="skip-link" href="#main-content" data-splash-inert inert>Skip to main content</a>
+  <header id="top" class="site-header" data-authenticated-only hidden data-splash-inert inert>
     <div class="navbar">
       <h1>MJM Workout Planner</h1>
-      <nav>
+      <nav aria-label="Main navigation">
         <ul class="nav-links">
-          <li><a href="index.html" class="active">About Me</a></li>
-          <li><a href="schedule.html">Workout Schedule</a></li>
-          <li><a href="todo.html">Daily Tasks</a></li>
-          <li><a href="macros.html">Macros</a></li>
-          <li><a href="contact.html">Contact Me</a></li>
+          <li class="desktop-main-nav-item"><a href="index.html" class="active">Dashboard</a></li>
+          <li class="desktop-main-nav-item"><a href="schedule.html">Workout Schedule</a></li>
+          <li class="desktop-main-nav-item"><a href="todo.html">Daily Tasks</a></li>
+          <li class="desktop-main-nav-item"><a href="macros.html">Macros</a></li>
+          <li><a href="admin.html" data-admin-only hidden>Admin panel</a></li>
+          <li><a href="index.html#auth-panel" data-auth-nav>Sign in</a></li>
+          <li><button type="button" class="nav-auth-button" data-sign-out hidden>Sign out</button></li>
         </ul>
       </nav>
     </div>
+    <p class="auth-global-status" id="global-auth-status" role="status" aria-live="polite"></p>
   </header>
+  <nav class="mobile-tab-bar" aria-label="Primary navigation" data-authenticated-only hidden>
+    <a href="index.html" class="active" aria-current="page"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9 21v-7h6v7"></path></svg></span><span>Dashboard</span></a>
+    <a href="schedule.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4m3-6v8m10-8v8m3-6v4M7 12h10"></path></svg></span><span>Workouts</span></a>
+    <a href="todo.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"></path></svg></span><span>Tasks</span></a>
+    <a href="macros.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"></path></svg></span><span>Macros</span></a>
+  </nav>
 
-  <main class="container" id="main-content">
-    <section id="about" class="about-section">
-      <div class="about-text">
-        <h2>About Me</h2>
-        <p>Welcome to my workout portfolio. This website is my personal hobby project, and it doubles as my daily workout planner.</p>
-        <div class="hero-actions">
-          <a href="schedule.html" class="btn-submit">View Workout Schedule</a>
-        </div>
+  <main class="container dashboard-container" id="main-content" data-splash-inert inert>
+    <section class="auth-panel" id="auth-panel" aria-labelledby="auth-heading">
+      <div class="auth-intro">
+        <p class="eyebrow">Your training, your way</p>
+        <h2 id="auth-heading">Sign in</h2>
+        <p>Create an account and verify your email to save your workout plan, macro goal, and profile privately.</p>
+        <p class="admin-help">The app administrator can access account records, including workout progress, tasks, and food logs, for support and account management.</p>
       </div>
 
-      <div class="carousel">
-        <div class="carousel-track">
-          <figure class="slide">
-            <img src="images/49c549e0-a247-48da-a0ec-b9f794891317.jpg" alt="Gym-Schd 1">
-          </figure>
-          <figure class="slide">
-            <img src="images/ba788eb1-ce8d-418a-b7b4-f605d56e88b2.jpg" alt="Gym-Schd 2">
-          </figure>
-          <figure class="slide">
-            <img src="images/b76db96d-fc23-4faa-a589-5cbd1723100b.jpg" alt="Gym-Schd 3">
-          </figure>
-          <figure class="slide">
-            <img src="images/acc5cc2d-dcac-41d4-9f4e-96ead7bda1a5.jpg" alt="Gym-Schd 4">
-          </figure>
+      <form class="auth-form" id="auth-form">
+        <div class="auth-field" id="display-name-field" hidden>
+          <label for="auth-display-name">Display name</label>
+          <input type="text" id="auth-display-name" maxlength="60" autocomplete="name">
         </div>
-      </div>
+        <div class="auth-field" id="auth-email-field">
+          <label for="auth-email">Email</label>
+          <input type="email" id="auth-email" autocomplete="email" required>
+        </div>
+        <div class="auth-field" id="auth-password-field">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" minlength="8" autocomplete="current-password" required>
+        </div>
+        <div class="auth-field" id="email-verification-field" hidden>
+          <label for="email-verification-code">Email verification code</label>
+          <input type="text" id="email-verification-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" aria-describedby="verification-email">
+          <p class="auth-email-destination" id="verification-email"></p>
+        </div>
+        <button type="submit" class="btn-submit" id="auth-submit">Sign in</button>
+        <button type="button" class="auth-toggle" id="resend-verification-code" hidden>Resend code</button>
+        <button type="button" class="auth-toggle" id="auth-toggle">Need an account? Sign up</button>
+        <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
+      </form>
     </section>
 
-    <section id="features" class="features-section" aria-labelledby="features-title">
-      <h2 id="features-title">What This Site Does</h2>
-      <ul class="feature-list">
-        <li>
-          <h3>Weekly Schedule</h3>
-          <p>My five-day gym split, with every exercise, set, rep range and rest time.</p>
-        </li>
-        <li>
-          <h3>Daily Checklist</h3>
-          <p>Check off each exercise as I finish it, one workout day at a time.</p>
-        </li>
-        <li>
-          <h3>Progress Tracking</h3>
-          <p>Daily and weekly progress, saved in this browser so it is still there tomorrow.</p>
-        </li>
-        <li>
-          <h3>Achievements &amp; History</h3>
-          <p>Every week is kept, with badges for full weeks and consecutive week streaks.</p>
-        </li>
-      </ul>
+    <section class="dashboard-view" id="dashboard-view" aria-labelledby="dashboard-title" hidden>
+      <div class="dashboard-heading">
+        <div>
+          <p class="eyebrow">Your training at a glance</p>
+          <h2 id="dashboard-title">Dashboard</h2>
+          <p id="dashboard-greeting">Welcome back.</p>
+        </div>
+        <a class="btn-submit" href="schedule.html">Open workout plan</a>
+      </div>
+
+      <p class="auth-status" id="dashboard-status" role="status" aria-live="polite"></p>
+
+      <section class="dashboard-calendar" aria-labelledby="dashboard-calendar-title">
+        <div class="dashboard-calendar__heading">
+          <div>
+            <p class="eyebrow">Today's date</p>
+            <h3 id="dashboard-date">Loading date...</h3>
+          </div>
+          <a href="schedule.html">Manage schedule</a>
+        </div>
+        <h4 id="dashboard-calendar-title" class="dashboard-calendar__label">This week</h4>
+        <div class="dashboard-week" id="dashboard-week" role="list" aria-label="This week's workout schedule"></div>
+        <article class="dashboard-reminder" aria-live="polite">
+          <div>
+            <p class="eyebrow">Today's workout</p>
+            <h3 id="dashboard-today-title">Checking your schedule...</h3>
+            <p id="dashboard-today-detail"></p>
+          </div>
+          <a href="schedule.html">View workout schedule</a>
+        </article>
+      </section>
+
+      <div class="dashboard-grid">
+        <article class="dashboard-card">
+          <span class="dashboard-card__icon" aria-hidden="true">01</span>
+          <h3>Workout plan</h3>
+          <p id="dashboard-plan-summary">No workout plan yet.</p>
+          <p class="dashboard-metric" id="dashboard-progress-summary">Your weekly progress will appear here.</p>
+          <a href="schedule.html">Edit schedule</a>
+        </article>
+        <article class="dashboard-card">
+          <span class="dashboard-card__icon" aria-hidden="true">02</span>
+          <h3>Daily tasks</h3>
+          <p>Keep meals, recovery, and training-day tasks in view.</p>
+          <p class="dashboard-metric" id="dashboard-tasks-summary">Your open tasks will appear here.</p>
+          <a href="todo.html">Open tasks</a>
+        </article>
+        <article class="dashboard-card">
+          <span class="dashboard-card__icon" aria-hidden="true">03</span>
+          <h3>Macro goal</h3>
+          <p class="dashboard-metric" id="dashboard-macro-summary">Set personal daily nutrition targets.</p>
+          <a href="macros.html">Manage macros</a>
+        </article>
+      </div>
+
+      <form class="profile-form" id="profile-form">
+        <div>
+          <p class="eyebrow">Account settings</p>
+          <h3>Your profile</h3>
+          <label for="profile-display-name">Display name</label>
+          <input type="text" id="profile-display-name" maxlength="60" autocomplete="name" required>
+        </div>
+        <button type="submit" class="btn-submit">Save profile</button>
+      </form>
+
+      <p class="dashboard-note">Your workout plan, profile, exercise progress, daily tasks, and food logs are saved to your account and sync across your signed-in devices.</p>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>&copy; 2026 Mark Justin Melgar
-    </p>
+  <footer class="site-footer" data-authenticated-only hidden data-splash-inert inert>
+    <p>&copy; 2026 MJM Workout Planner</p>
+    <p><a href="about.html">About This App</a> <a href="contact.html">Contact Me</a></p>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="splash.js" defer></script>
+  <script src="dashboard.js" defer></script>
   <script src="script.js" defer></script>
 </body>
 </html>

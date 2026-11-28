@@ -1,5 +1,6 @@
-(() => {
+window.MJM_MACROS_READY = (async () => {
   "use strict";
+  await (window.MJM_AUTH_READY || Promise.resolve());
 
   const API_URL = "/api/scan-plate";
 
@@ -9,7 +10,11 @@
 
   const MULTIPLIERS = [0.5, 1, 1.5];
 
-  const LOG_KEY = "mjm-macro-log-v1";
+  const authState = window.MJM_AUTH ? window.MJM_AUTH.state : null;
+  const accountScoped = Boolean(authState && authState.user);
+  const LOG_KEY = accountScoped
+    ? `mjm-macro-log-v1-${authState.user.id}`
+    : "mjm-macro-log-v1";
   const GOAL_KEY = "mjm-macro-goal-v1";
 
   const GOALS = {
@@ -100,6 +105,11 @@
   }
 
   function readLog() {
+    if (accountScoped) {
+      const saved = authState.appData && authState.appData.macro_log;
+      return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    }
+
     try {
       const parsed = JSON.parse(localStorage.getItem(LOG_KEY));
       return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
@@ -108,7 +118,12 @@
     }
   }
 
-  function writeLog(log) {
+  async function writeLog(log) {
+    if (accountScoped) {
+      await window.MJM_AUTH.saveAppData({ macro_log: log });
+      return true;
+    }
+
     try {
       localStorage.setItem(LOG_KEY, JSON.stringify(log));
       return true;
@@ -383,7 +398,8 @@
 
 
   function renderToday() {
-    const entries = readLog()[todayKey()] || [];
+    const savedEntries = readLog()[todayKey()];
+    const entries = Array.isArray(savedEntries) ? savedEntries : [];
     const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
     entries.forEach(entry => {
@@ -428,7 +444,7 @@
     });
   }
 
-  function logMeal() {
+  async function logMeal() {
     if (items.length === 0) return;
 
     const log = readLog();
@@ -439,7 +455,7 @@
     items.forEach((item, index) => {
       const values = scaled(item);
       entries.push({
-        id: stamp + index,
+        id: `${stamp}-${Math.random().toString(36).slice(2, 8)}-${index}`,
         name: item.name,
         grams: values.grams,
         calories: values.calories,
@@ -450,8 +466,12 @@
     });
     log[key] = entries;
 
-    if (!writeLog(log)) {
-      setStatus("Could not save. Browser storage may be full or blocked.", true);
+    try {
+      const saved = await writeLog(log);
+      if (!saved) throw new Error("Browser storage may be full or blocked.");
+    } catch (error) {
+      console.error("Food log could not be saved:", error);
+      setStatus(`Could not save today's food log: ${error.message}`, true);
       return;
     }
 
@@ -461,12 +481,18 @@
     setStatus(count + (count === 1 ? " item" : " items") + " added to today's total.");
   }
 
-  function removeEntry(id) {
+  async function removeEntry(id) {
     const log = readLog();
     const key = todayKey();
     if (!Array.isArray(log[key])) return;
     log[key] = log[key].filter(entry => entry.id !== id);
-    writeLog(log);
+    try {
+      await writeLog(log);
+    } catch (error) {
+      console.error("Food log entry could not be removed:", error);
+      setStatus(`Could not remove that food log entry: ${error.message}`, true);
+      return;
+    }
     renderToday();
   }
 
@@ -506,7 +532,14 @@
     fat: document.getElementById("macro-of-fat")
   };
 
-  let goal = readGoal();
+  let goal = accountScoped
+    ? (authState.settings && authState.settings.macro_goal)
+    : readGoal();
+
+  if (goal && (!goal.profile || !goal.targets || !Number.isFinite(goal.targets.calories))) {
+    goal = null;
+    setGoalStatus("The saved macro goal is invalid. Enter your details to create a new one.", true);
+  }
 
   function readGoal() {
     try {
@@ -517,7 +550,12 @@
     }
   }
 
-  function writeGoal(value) {
+  async function writeGoal(value) {
+    if (accountScoped) {
+      await window.MJM_AUTH.saveSettings({ macro_goal: value });
+      return true;
+    }
+
     try {
       if (value) {
         localStorage.setItem(GOAL_KEY, JSON.stringify(value));
@@ -642,7 +680,7 @@
     bar.classList.toggle("is-over", diff < 0);
   }
 
-  goalForm.addEventListener("submit", event => {
+  goalForm.addEventListener("submit", async event => {
     event.preventDefault();
 
     const profile = {
@@ -661,17 +699,33 @@
     }
 
     goal = { profile, targets: calcTargets(profile) };
-    const saved = writeGoal(goal);
-    setGoalStatus(saved ? "Targets saved." : "Targets calculated, but they could not be saved in this browser.", !saved);
+    try {
+      const saved = await writeGoal(goal);
+      setGoalStatus(
+        saved
+          ? (accountScoped ? "Targets saved to your account." : "Targets saved.")
+          : "Targets calculated, but they could not be saved in this browser.",
+        !saved
+      );
+    } catch (error) {
+      console.error("Macro goal could not be saved:", error);
+      setGoalStatus(`Targets calculated, but they could not be saved to your account: ${error.message}`, true);
+    }
     renderGoal();
     renderToday();
   });
 
-  goalClearBtn.addEventListener("click", () => {
+  goalClearBtn.addEventListener("click", async () => {
+    try {
+      await writeGoal(null);
+    } catch (error) {
+      console.error("Macro goal could not be cleared:", error);
+      setGoalStatus(`Your account goal could not be cleared: ${error.message}`, true);
+      return;
+    }
     goal = null;
-    writeGoal(null);
     goalForm.reset();
-    setGoalStatus("Goal cleared.");
+    setGoalStatus(accountScoped ? "Account goal cleared." : "Goal cleared.");
     renderGoal();
     renderToday();
   });
@@ -692,6 +746,9 @@
   scanBtn.addEventListener("click", scanPlate);
   simBtn.addEventListener("click", simulateScan);
   logBtn.addEventListener("click", logMeal);
+  window.addEventListener("mjm:account-data", () => {
+    if (accountScoped) renderToday();
+  });
 
   cancelBtn.addEventListener("click", () => {
     hideResult();

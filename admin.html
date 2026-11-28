@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MJM Workout Planner | Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-requires-auth="true">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header id="top" class="site-header">
+    <div class="navbar">
+      <h1>MJM Workout Planner</h1>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li class="desktop-main-nav-item"><a href="index.html">Dashboard</a></li>
+          <li class="desktop-main-nav-item"><a href="schedule.html">Workout Schedule</a></li>
+          <li class="desktop-main-nav-item"><a href="todo.html">Daily Tasks</a></li>
+          <li class="desktop-main-nav-item"><a href="macros.html">Macros</a></li>
+          <li><a href="admin.html" class="active" data-admin-only hidden>Admin panel</a></li>
+          <li><a href="index.html#auth-panel" data-auth-nav>Sign in</a></li>
+          <li><button type="button" class="nav-auth-button" data-sign-out hidden>Sign out</button></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="auth-global-status" id="global-auth-status" role="status" aria-live="polite"></p>
+  </header>
+  <nav class="mobile-tab-bar" aria-label="Primary navigation" data-authenticated-only hidden>
+    <a href="index.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9 21v-7h6v7"></path></svg></span><span>Dashboard</span></a>
+    <a href="schedule.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4m3-6v8m10-8v8m3-6v4M7 12h10"></path></svg></span><span>Workouts</span></a>
+    <a href="todo.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"></path></svg></span><span>Tasks</span></a>
+    <a href="macros.html"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"></path></svg></span><span>Macros</span></a>
+  </nav>
+
+  <main class="container admin-container" id="main-content">
+    <section class="admin-heading">
+      <p class="eyebrow">Owner controls</p>
+      <h2>Administrator panel</h2>
+      <p>Manage accounts and the shared experience for MJM Workout Planner.</p>
+    </section>
+    <p class="auth-status" id="admin-status" role="status" aria-live="polite">Checking administrator access...</p>
+
+    <div class="admin-layout" id="admin-app" hidden>
+      <section class="admin-section" aria-labelledby="admin-users-heading">
+        <div class="admin-section__heading">
+          <div>
+            <p class="eyebrow">Accounts</p>
+            <h3 id="admin-users-heading">User management</h3>
+          </div>
+          <button type="button" class="admin-secondary-button" id="refresh-users">Refresh</button>
+        </div>
+        <p class="admin-help">Suspending an account blocks sign-in and app-data access. Deletion permanently removes the account and its saved data.</p>
+        <div class="admin-user-list" id="admin-users" aria-live="polite"></div>
+      </section>
+
+      <section class="admin-section" aria-labelledby="admin-settings-heading">
+        <div class="admin-section__heading">
+          <div>
+            <p class="eyebrow">Shared app controls</p>
+            <h3 id="admin-settings-heading">Global settings</h3>
+          </div>
+        </div>
+        <form class="admin-settings-form" id="admin-settings-form">
+          <div class="admin-field">
+            <label for="admin-announcement">Announcement</label>
+            <textarea id="admin-announcement" maxlength="500" rows="3" placeholder="Optional message shown to everyone"></textarea>
+            <p class="admin-help">Up to 500 characters. Leave blank to hide the announcement.</p>
+          </div>
+          <label class="admin-toggle">
+            <input id="admin-maintenance" type="checkbox">
+            <span>Enable maintenance mode (blocks non-admin access)</span>
+          </label>
+          <label class="admin-toggle">
+            <input id="admin-signups" type="checkbox">
+            <span>Allow new account sign-ups</span>
+          </label>
+          <div class="admin-field">
+            <label for="admin-default-workout">Default workout plan (JSON)</label>
+            <textarea id="admin-default-workout" class="admin-json-input" rows="10" spellcheck="false" placeholder="Leave blank for no default workout plan"></textarea>
+            <p class="admin-help">Use the seven weekday keys (Monday through Sunday), each with an on, title, time, and exercises list. Applies only to new accounts.</p>
+            <button type="button" class="admin-secondary-button" id="use-current-workout">Use my saved workout plan</button>
+          </div>
+          <div class="admin-field">
+            <label for="admin-default-macros">Default macro goal (JSON)</label>
+            <textarea id="admin-default-macros" class="admin-json-input" rows="8" spellcheck="false" placeholder="Leave blank for no default macro goal"></textarea>
+            <p class="admin-help">Must contain a profile with a goal and numeric calorie, protein, carbs, and fat targets. Applies only to new accounts.</p>
+            <button type="button" class="admin-secondary-button" id="use-current-macros">Use my saved macro goal</button>
+          </div>
+          <button class="btn-submit" type="submit" id="save-admin-settings">Save global settings</button>
+        </form>
+      </section>
+
+      <section class="admin-section admin-records" aria-labelledby="admin-records-heading">
+        <p class="eyebrow">Private account data</p>
+        <h3 id="admin-records-heading">Selected user records</h3>
+        <p class="admin-privacy-notice">As administrator, you can view each user's private workout plan, exercise progress, daily tasks, macro goal, and food log. Tell users about this access before they create an account.</p>
+        <p class="admin-help" id="admin-records-label">Select “View records” for an account above.</p>
+        <pre class="admin-record-output" id="admin-user-records" hidden></pre>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 MJM Workout Planner</p>
+    <p><a href="about.html">About This App</a> <a href="contact.html">Contact Me</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="admin.js" defer></script>
+</body>
+</html>
