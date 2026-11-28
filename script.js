@@ -720,8 +720,10 @@
 })();
 
 
-(() => {
+(async () => {
   "use strict";
+  await (window.MJM_PLAN_READY || Promise.resolve());
+  await (window.MJM_AUTH_READY || Promise.resolve());
 
   const GUIDES = {
     "incline barbell bench press": ["Upper chest, shoulders, triceps", "Set the bench to a 30-45 degree incline and lie back with your eyes under the bar.|Grip slightly wider than your shoulders, unrack, and lower the bar to your upper chest.|Press up and slightly back until your arms are straight.", "Keep your shoulder blades pinched and feet flat. Use a spotter for heavy sets."],
@@ -892,20 +894,27 @@
   async function lookupVideo(name, request) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12000);
+    let failureMessage =
+      "Automatic video lookup is unavailable. Check the YouTube API setup and latest Vercel deployment.";
     try {
       const response = await fetch(
         "/api/exercise-video?name=" + encodeURIComponent(name),
         { signal: controller.signal }
       );
-      if (!response.ok) throw new Error("lookup failed");
       const data = await response.json();
+      if (!response.ok) {
+        failureMessage = data && typeof data.error === "string"
+          ? data.error
+          : failureMessage;
+        throw new Error(failureMessage);
+      }
       const id = getYouTubeId(data && data.id);
-      if (!id) throw new Error("no id");
+      if (!id) throw new Error("The video lookup returned an invalid video.");
       saveVideoCache(name, id);
       if (request === videoRequest) showVideoEmbed(name, id);
     } catch (error) {
       if (request === videoRequest) {
-        showVideoNote(name, "Couldn\u2019t load a demo video right now.");
+        showVideoNote(name, failureMessage);
       }
     } finally {
       clearTimeout(timer);
