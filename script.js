@@ -703,6 +703,12 @@
     if (leaving) return;
     leaving = true;
 
+    try {
+      window.sessionStorage.setItem("mjm-internal-navigation", url.pathname);
+    } catch (error) {
+      console.warn("In-app navigation state could not be saved:", error);
+    }
+
     document.body.classList.add("is-leaving");
 
     window.setTimeout(

@@ -3176,3 +3176,11 @@ body.plan-open { overflow: hidden; }
   height: auto;
   border-radius: 22%;
 }
+
+body.auth-initializing > :not(#loading-splash):not(script) {
+  visibility: hidden;
+}
+
+body.auth-initializing main.container {
+  animation: none;
+}

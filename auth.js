@@ -233,6 +233,7 @@
   }
 
   function applyAuthView() {
+    document.body.classList.remove("auth-initializing");
     document.body.classList.toggle("has-mobile-nav", Boolean(state.user));
     document.querySelectorAll("[data-authenticated-only]").forEach(element => {
       element.hidden = !state.user;
