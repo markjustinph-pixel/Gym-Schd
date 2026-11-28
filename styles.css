@@ -873,7 +873,8 @@ h2 {
     display: none;
   }
 
-  .mobile-tab-bar:not([hidden]) {
+  .mobile-tab-bar:not([hidden]),
+  html.mjm-resume-authenticated .mobile-tab-bar[hidden] {
     position: fixed;
     z-index: 1000;
     right: 0;
@@ -3179,6 +3180,32 @@ body.plan-open { overflow: hidden; }
 
 body.auth-initializing > :not(#loading-splash):not(script) {
   visibility: hidden;
+}
+
+html.mjm-skip-splash .loading-splash {
+  display: none !important;
+}
+
+html.mjm-resume-authenticated body.auth-initializing > :not(#loading-splash):not(script) {
+  visibility: visible;
+}
+
+html.mjm-resume-authenticated body.auth-initializing > #main-content {
+  visibility: hidden;
+}
+
+html.mjm-resume-authenticated header[data-authenticated-only][hidden],
+html.mjm-resume-authenticated footer[data-authenticated-only][hidden] {
+  display: block !important;
+}
+
+html.mjm-resume-authenticated [data-auth-nav] {
+  display: none !important;
+}
+
+html.mjm-resume-authenticated [data-sign-out][hidden],
+html.mjm-resume-admin [data-admin-only][hidden] {
+  display: inline-block !important;
 }
 
 body.auth-initializing main.container {

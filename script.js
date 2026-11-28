@@ -704,7 +704,15 @@
     leaving = true;
 
     try {
-      window.sessionStorage.setItem("mjm-internal-navigation", url.pathname);
+      window.sessionStorage.setItem("mjm-internal-navigation", "true");
+      window.sessionStorage.setItem(
+        "mjm-navigation-authenticated",
+        String(Boolean(window.MJM_AUTH && window.MJM_AUTH.state.user))
+      );
+      window.sessionStorage.setItem(
+        "mjm-navigation-admin",
+        String(Boolean(window.MJM_AUTH && window.MJM_AUTH.state.isAdmin))
+      );
     } catch (error) {
       console.warn("In-app navigation state could not be saved:", error);
     }

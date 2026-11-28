@@ -246,6 +246,10 @@
     });
 
     renderGlobalSettings();
+    document.documentElement.classList.remove(
+      "mjm-resume-authenticated",
+      "mjm-resume-admin"
+    );
 
     if (authPanel && dashboard) {
       authPanel.hidden = Boolean(state.user);

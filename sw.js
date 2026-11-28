@@ -1,4 +1,4 @@
-const CACHE = "mjm-workout-v22";
+const CACHE = "mjm-workout-v23";
 
 const FILES = [
   "./",
