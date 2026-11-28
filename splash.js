@@ -4,7 +4,20 @@
   const splash = document.getElementById("loading-splash");
   if (!splash) return;
 
-  const minimumWait = new Promise(resolve => window.setTimeout(resolve, 5000));
+  const MINIMUM_DISPLAY_MS = 250;
+  const MAXIMUM_WAIT_MS = 10000;
+  const minimumDisplay = new Promise(resolve =>
+    window.setTimeout(resolve, MINIMUM_DISPLAY_MS)
+  );
+  const authReady = window.MJM_AUTH_READY &&
+    typeof window.MJM_AUTH_READY.then === "function"
+    ? Promise.resolve(window.MJM_AUTH_READY).catch(error => {
+        console.error("Authentication initialization failed:", error);
+      })
+    : Promise.resolve();
+  const failSafe = new Promise(resolve =>
+    window.setTimeout(resolve, MAXIMUM_WAIT_MS)
+  );
 
   function dismissSplash() {
     splash.setAttribute("aria-busy", "false");
@@ -14,5 +27,8 @@
     });
   }
 
-  minimumWait.then(dismissSplash);
+  Promise.all([
+    minimumDisplay,
+    Promise.race([authReady, failSafe])
+  ]).then(dismissSplash);
 })();
